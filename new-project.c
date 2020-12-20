@@ -5,7 +5,6 @@
 #include <string.h>
 
 #define CITY_COUNT_INITIAL 312 
-#define CITY_COUNT_INCREMENTAL 5 
 
 typedef struct {
 	int cityCount;
@@ -17,7 +16,6 @@ typedef struct {
 // main skeleton: 
 Graph createGraph(int cityCount);
 void dropGraph(Graph graph);
-void addCity(char* city);
 void addFlight(Graph graph, char * source, char * destination);
 void removeFLight(Graph graph, char * source, char * destination);
 
@@ -47,8 +45,7 @@ void MENU_ADMINISTRATOR(){
 	printf("1. PRINT ALL FLIGHTS\n\n");
 	printf("2. PRINT ALL FLIGHT FROM A CITY\n\n");
 	printf("3. SORT ALL DISTANCES BETWEEN TWO CITIES\n\n");
-	printf("4. MODIFY MAP: ADD CITY\n\n");
-	printf("5. MODIFY MAP: ADD FLIGHT\n\n");
+	printf("4. MODIFY MAP: ADD FLIGHT\n\n");
 	printf("---------------------------------\n\n");
 }
 	
