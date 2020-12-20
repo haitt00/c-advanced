@@ -5,6 +5,7 @@
 #include <string.h>
 
 #define CITY_COUNT_INITIAL 312 
+#define CITY_LENGTH 21
 
 typedef struct {
 	int cityCount;
