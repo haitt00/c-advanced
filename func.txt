@@ -1,0 +1,75 @@
+generate ticket_prices.txt from airport.txt --> a new header file
+ticket_prices
+	airport1-airport2-ticket_price(rand in (20 - 1000))
+	some special flight has ticket_price 10.000
+
+func
+	print all flight
+	print all flight from a certain airport
+	cheapest/shortest path from airportI to airportJ
+	sort all the shortest paths's prices
+	sort all the shortest paths from a certain airport's prices
+
+Work Description
+đồ thị
+	các máy bay đi đến với nhau, mỗi nơi là 1 đỉnh, mỗi chuyến bay là 1 cạnh có hướng có trọng số là giá vé
+cách lưu data
+	graph gồm JRB airport và JRB flight
+		airport lưu key là id auto increment, val là tên sân bay
+		flight lưu key là id của sân bay, val là 1 JRB tree
+		tree lưu key là id của sân bay mà sân bay ở edges bay tới, val là trọng số
+		
+đường đi ngắn nhất
+	cho người dùng nhập vào 2 tên sân bay và tìm shortest path của 2 sân bay
+
+sort tất cả các shortest route (từ sân bay ai đến aj) theo thời gian bay/giá vé
+	~1400 sân bay là ~1.000.000 route
+	route được lưu trong array với index = id_of_airport1 * number_of_airport + id_of_airport2 
+
+
+
+
+Graph flight_list;
+
+void menu();
+void init();
+
+// indegree
+int flightToAirport(Graph graph, int airportID, int* output);
+// outdegree
+int flightFromAirport(Graph graph, int airportID, int* output);
+
+int getTicketPrice(Graph graph, int source, int destination);
+int cheapestFlight(Graph graph, char * source, char * destination, int * path, int * path_length);
+
+int cheapestFlightFromAirport(Graph graph, char * source, int * output);
+int cheapestFlightFromAllAirport(Graph graph, int * output);
+
+void printAllFlightAndAirport(Graph graph){
+    // format 
+    // print top 5 destination, and ...
+    // SourceID-Source-Destination-Ticket Price
+    JRB tmp_source;
+    char source[MAX_AIRPORT_NAME_SIZE];
+    char destination[MAX_AIRPORT_NAME_SIZE];
+    jrb_traverse(tmp_source, graph.flights){
+        int numberOfDestination = 0;
+        int sourceID = jval_i(tmp_source->key);
+        strcpy(source, getAiportName(graph, sourceID));
+        printf("AirportID: %d AirportName: %s\n", sourceID, source);
+        printf("Fly to: ");
+        JRB destination_list = (JRB) jval_v(tmp_source->val);
+        JRB tmp_destination;
+        jrb_traverse(tmp_destination, destination_list){
+            if(numberOfDestination < DESTINATION_NUMBER){
+                int destinationID = jval_i(tmp_destination->key);
+                strcpy(destination, getAiportName(graph, destinationID));
+                numberOfDestination++;
+            }
+            else{
+                printf("...\n");
+                break;
+            }
+        }
+    }
+}
