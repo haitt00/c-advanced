@@ -3,62 +3,42 @@
 #include "dllist.h"
 #include <stdlib.h>
 #include <string.h>
-
-#define CITY_COUNT_INITIAL 312 
-#define CITY_COUNT_INCREMENTAL 5 
+#include "flightmaking.h"
+#define INFINITIVE_VALUE 10000000
+#define INVALID_NAME "none"
+#define INPUT_FILE "flight10.txt"
+#define DESTINATION_DISPLAY 5
 
 typedef struct {
-	int cityCount;
-	char** cities;
-    int** hasflight;
-    int** distance;
-    int** connections;
+    JRB airports;
+    JRB flights;
 } Graph;
-// main skeleton: 
-Graph createGraph(int cityCount);
+
+// TODO: change in jval.h so that a jval can hold a string with MAX_AIRPORT_NAME_SIZE;
+Graph createGraph();
 void dropGraph(Graph graph);
-void addCity(char* city);
-void addFlight(Graph graph, char * source, char * destination);
-void removeFLight(Graph graph, char * source, char * destination);
+// max DESTINATION_DISPLAY destination for a source 
+void printAllFlightAndAirport(Graph graph);
+void printAllFlightFromAirport(Graph graph, char * airport);
 
-void printAllFlight(Graph graph);
-void printAllFlightFromCity(Graph graph, char * city);
+void addNewAirport(Graph graph, char * airport, int airportID);
+int getAirportID(Graph graph, char * airportName);
+char * getAiportName(Graph graph, int airportID);
 
-void printQuickestRoute(Graph graph, char* source, char* destination);
-//shortest patht algorithm on connections graph
-void printShortestRoute(Graph graph, char* source, char* destination);
-//quickest route is always by car, no need to run algorithm here
+void addFlight(Graph graph, char * source, char * destination, int ticket_price);
+int addFlightByFile(Graph graph, char * fileName);
 
-int getCityID(Graph graph, char * city);
-char * getCityName(Graph graph, int cityID);
+void menu();
+void init();
 
-void MENU_USER(){
-	printf("\n\tUS & Canada cities flight suggestion system\n");
-	printf("---------------------------------\n\n");
-	printf("1. PRINT ALL FLIGHTS\n\n");
-	printf("2. PRINT ALL FLIGHT FROM A CITY\n\n");
-	printf("3. FIND SHORTEST TRAVEL ROUTE BETWEEN TWO CITIES\n\n");
-	printf("4. FIND QUICKEST TRAVEL ROUTE BETWEEN TWO CITIES\n\n");
-	printf("---------------------------------\n\n");
-}
-void MENU_ADMINISTRATOR(){
-	printf("\n\tUS & Canada cities flight admin system\n");
-	printf("---------------------------------\n\n");
-	printf("1. PRINT ALL FLIGHTS\n\n");
-	printf("2. PRINT ALL FLIGHT FROM A CITY\n\n");
-	printf("3. SORT ALL DISTANCES BETWEEN TWO CITIES\n\n");
-	printf("4. MODIFY MAP: ADD CITY\n\n");
-	printf("5. MODIFY MAP: ADD FLIGHT\n\n");
-	printf("---------------------------------\n\n");
-}
-	
-int main(){
+// indegree
+int flightToAirport(Graph graph, char * airportName, int* output);
+// outdegree
+int flightFromAirport(Graph graph, char * airportName, int* output);
 
-}
+int getTicketPrice(Graph graph, char * source, char * destination);
+int cheapestFlight(Graph graph, char * source, char * destination, int * path, int * path_length);
 
-
-
-
-
-
-
+// sort purpose
+int cheapestFlightFromAirport(Graph graph, char * source, int * output);
+int cheapestFlightFromAllAirport(Graph graph, int * output);
