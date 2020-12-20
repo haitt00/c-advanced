@@ -17,8 +17,12 @@ cách lưu data
 	graph gồm JRB airport và JRB flight
 		airport lưu key là id auto increment, val là tên sân bay
 		flight lưu key là id của sân bay, val là 1 JRB tree
-		tree lưu key là id của sân bay mà sân bay ở edges bay tới, val là trọng số
-		
+		tree lưu key là id của sân bay mà sân bay ở flight bay tới, val là trọng số
+	hoặc
+        airport lưu key là tên sân bay, val là int id auto increment
+		flight lưu key là tên sân bay, val là 1 JRB tree
+        tree lưu key là tên của sân bay mà sân bay ở flight bay tới, val là trọng số
+
 đường đi ngắn nhất
 	cho người dùng nhập vào 2 tên sân bay và tìm shortest path của 2 sân bay
 
