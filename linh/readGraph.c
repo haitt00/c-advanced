@@ -85,23 +85,17 @@ Graph readGraphFromFile(){
         return createGraph(0);
     }
     int cityID = 0;
-    int beforeComma = 1;
     while (currentChar != EOF){
         currentChar = fgetc(fp);
-        if(currentChar == ','){
-            beforeComma = 0;
+        if(currentChar == '\n'){
             tempString[tempChar] = '\0';
             strcpy(g.cities[cityID], tempString);   
-            // printf("%s\n",g.cities[cityID]); // debug purpose
+            printf("%s\n",g.cities[cityID]); // debug purpose
             tempChar = 0;
             cityID++;
-        }else if(currentChar == '\n'){
-            beforeComma = 1;
         }else{
-            if(beforeComma){
-                tempString[tempChar] = currentChar;
-                tempChar++;
-            }
+            tempString[tempChar] = currentChar;
+            tempChar++;
         }
     }
     fclose(fp);
