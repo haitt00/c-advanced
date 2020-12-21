@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include "jrb.h"
-#include "dllist.h"
 #include <stdlib.h>
 #include <string.h>
 
