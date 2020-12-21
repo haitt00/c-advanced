@@ -11,6 +11,9 @@
 #define DISTANCE_LIST_FILE
 #define CAR_SPEED 1
 #define PLANE_SPEED 100
+#define INVALID_CITY_ID -1
+#define INVALID_CITY_NAME "INVALID"
+#define INVALID_DISTANCE
 
 typedef struct {
 	int cityCount;
