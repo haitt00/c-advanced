@@ -1,0 +1,24 @@
+
+func
+	print all flight
+	print all flight from a certain city
+	quickest travel path from cityI to cityJ
+	sort all the distances between city pairs
+
+Work Description
+đồ thị
+    đỉnh: thành phố
+    cạnh: (undirected) tuỳ đồ thị là 1 trong 3 thông tin sau
+        - trọng số là true/false có chuyến bay hay ko
+        - trọng số là khoảng cách
+        - trọng số là thời gian di chuyển ngắn nhất
+cách lưu data
+	
+    char* cities[]
+        cities lưu tên thành phố
+    int hasflight[][]
+        hasflight lưu trạng thái có/không có chuyến bay giữa từng cặp ID thành phố
+    int distance[][]
+        distance lưu khoảng cách giữa từng cặp ID thành phố
+    int connections[][] : tính được từ hasflight & distance:
+        connections lưu thời gian di chuyển ngắn nhất giữa từng cặp ID thành phố
