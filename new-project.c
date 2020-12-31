@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <conio.h>
 
 #define CITY_COUNT_INITIAL 312 
 #define CITY_NAME_LENGTH 25
-#define CITY_LIST_FILE "city_test.txt"
-#define FLIGHT_LIST_FILE "flight_test.txt"
-#define DISTANCE_LIST_FILE "dist_test.txt"
+#define CITY_LIST_FILE "usca312_name_cleaned.txt"
+#define FLIGHT_LIST_FILE "usca312_flight_initial.txt"
+#define DISTANCE_LIST_FILE "usca312_dist.txt"
 #define CAR_SPEED 1
 #define PLANE_SPEED 100
 #define INVALID_CITY_ID -1
@@ -44,7 +45,7 @@ void MAIN_MENU(){
 	printf("---------------------------------\n\n");
 	printf("1. OPEN MENU FOR USER\n\n");
 	printf("2. OPEN MENU FOR ADMIN\n\n");
-	printf("3. EXIT\n");
+	printf("3. EXIT\n\n");
 	printf("---------------------------------\n\n");
 }
 void MENU_USER(){
@@ -53,15 +54,17 @@ void MENU_USER(){
 	printf("1. PRINT ALL FLIGHTS\n\n");
 	printf("2. PRINT ALL FLIGHT FROM A CITY\n\n");
 	printf("3. FIND SHORTEST TRAVEL ROUTE BETWEEN TWO CITIES\n\n");
+    printf("4. EXIT\n\n");
 	printf("---------------------------------\n\n");
 }
 void MENU_ADMINISTRATOR(){
 	printf("\n\tUS & Canada cities flight admin system\n");
 	printf("---------------------------------\n\n");
 	printf("1. PRINT ALL FLIGHTS\n\n");
-	printf("2. PRINT ALL FLIGHT FROM A CITY\n\n");
+	printf("2. PRINT ALL FLIGHTS FROM A CITY\n\n");
 	printf("3. SORT ALL DISTANCES BETWEEN TWO CITIES\n\n");
 	printf("4. MODIFY MAP: ADD/REMOVE FLIGHT\n\n");
+    printf("5. EXIT\n\n");
 	printf("---------------------------------\n\n");
 }
 Graph createGraph(int cityCount){
@@ -90,6 +93,16 @@ void dropGraph(Graph g){
     free(g.connections);
     free(g.distance);
     free(g.hasflight);
+}
+void getCityNameFromUser(char * prompt1, char* prompt2, char* cityName){
+    char stateCode[CITY_NAME_LENGTH];
+    printf("%s: ", prompt1);
+    scanf(" %[^\n]", cityName);
+    printf("%s: ", prompt2);
+    getch();
+    scanf(" %[^\n]", stateCode);
+    strcat(cityName, ", ");
+    strcat(cityName, stateCode);
 }
 Graph readGraphFromFile(){
     Graph g = createGraph(CITY_COUNT_INITIAL);
@@ -203,23 +216,84 @@ Graph readGraphFromFile(){
         }
     return g;
 }
+
+void printShortestRoute(Graph graph, char* source, char* destination){
+
+}
+void printAllFlight(Graph graph){
+    printf("All flights: \n");
+    // for(int i = 0, i < CITY_COUNT_INITIAL)
+}
+void printAllFlightFromCity(Graph graph, char * city){
+        printf("All flights from %s:\n", city);
+}
 int main(){
 	int choiceMenu;
 	int choice;
+    Graph g = readGraphFromFile();
+    system("pause");
 	while(1){
-		system("cls");
+		// system("cls");
 		MAIN_MENU();
 		printf("Enter choice: ");
-		scanf("%d", &choiceMenu);
-		getch();	
+		scanf("%d", &choiceMenu);	
 		if(choiceMenu==1){
-			system("cls");
-			MENU_USER();
-			printf("Enter choice: ");
-			scanf("%d", &choice);
+            while(1){
+                // system("cls");
+                MENU_USER();
+                printf("Enter choice: ");
+                scanf("%d", &choice);
+                if(choice==1){
+                    printAllFlight(g);
+                }
+                else if(choice==2){
+                    char cityName[CITY_NAME_LENGTH];
+                    getCityNameFromUser("Enter city name", "Enter state code", cityName);
+                    printf("%s\n", cityName);
+                    printAllFlightFromCity(g, cityName);
+                }
+                else if(choice==3){
+                    char sourceCityName[CITY_NAME_LENGTH];
+                    char destinationCityName[CITY_NAME_LENGTH];
+                    getCityNameFromUser("Enter source city name", "Enter source state code", sourceCityName);
+                    getCityNameFromUser("Enter destination city name", "Enter destination state code", destinationCityName);
+                    printShortestRoute(g, sourceCityName, destinationCityName);
+                }
+                else if(choice==4){
+                    break;
+                }
+            }	
 		}
+        else if(choiceMenu==2){
+            while(1){
+                // system("cls");
+                MENU_ADMINISTRATOR();
+                printf("Enter choice: ");
+                scanf("%d", &choice);
+                if(choice==1){
+
+                }
+                else if(choice==2){
+
+                }
+                else if(choice==3){
+
+                }
+                else if(choice==4){
+                    
+                }
+                else if(choice==5){
+                    break;
+                }
+            }
+        }
+        else if(choiceMenu==3){
+            // printf("Exiting\n");
+            // dropGraph(g);
+            exit(0);
+        }
 	}
-	
+	return 0;
 	// printf("hello world\n");
 	// Graph g = readGraphFromFile();
 	// printf("%d\n", g.cityCount);
