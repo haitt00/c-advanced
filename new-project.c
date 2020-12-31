@@ -14,6 +14,7 @@
 #define INVALID_CITY_ID -1
 #define INVALID_CITY_NAME "INVALID"
 #define INVALID_DISTANCE
+#define INFINITE 1000000000
 
 typedef struct {
 	int cityCount;
@@ -224,8 +225,55 @@ Graph readGraphFromFile(){
         }
     return g;
 }
-
+int dijsktra(int** cost,int source,int target)
+{
+    int dist[CITY_COUNT_INITIAL],prev[CITY_COUNT_INITIAL],selected[CITY_COUNT_INITIAL]={0},i,m,min,start,d,j;
+    char path[CITY_COUNT_INITIAL];
+    for(i=1;i< CITY_COUNT_INITIAL;i++)
+    {
+        dist[i] = INFINITE;
+        prev[i] = -1;
+    }
+    start = source;
+    selected[start]=1;
+    dist[start] = 0;
+    while(selected[target] ==0)
+    {
+        min = INFINITE;
+        m = 0;
+        for(i=1;i< CITY_COUNT_INITIAL;i++)
+        {
+            d = dist[start] +cost[start][i];
+            if(d< dist[i]&&selected[i]==0)
+            {
+                dist[i] = d;
+                prev[i] = start;
+            }
+            if(min>dist[i] && selected[i]==0)
+            {
+                min = dist[i];
+                m = i;
+            }
+        }
+        start = m;
+        selected[start] = 1;
+    }
+    start = target;
+    j = 0;
+    while(start != -1)
+    {
+        path[j++] = start+65;
+        start = prev[start];
+    }
+    path[j]='\0';
+    strrev(path);
+    printf("%s", path);
+    return dist[target];
+}
 void printShortestRoute(Graph graph, char* source, char* destination){
+    int idSource = getCityID(graph, source);
+    int idDestination = getCityID(graph, destination);
+    int result = dijsktra(graph.connections, idSource, idDestination);
 
 }
 void printAllFlight(Graph graph){
@@ -246,10 +294,15 @@ void printAllFlight(Graph graph){
 void printAllFlightFromCity(Graph graph, char * city){
     printf("All flights from %s: \n", city);
     int cityId = getCityID(graph, city);
-    int count = 1;
-    for(int i = 0; i < CITY_COUNT_INITIAL; i++){
-        if(graph.hasflight[i][cityId]==1){
-            printf("%d. <<<------>>> %s\n", count++, getCityName(graph, i));
+    if(cityId == INVALID_CITY_ID){
+        printf("City not found\n");
+    }
+    else{
+        int count = 1;
+        for(int i = 0; i < CITY_COUNT_INITIAL; i++){
+            if(graph.hasflight[i][cityId]==1){
+                printf("%d. <<<------>>> %s\n", count++, getCityName(graph, i));
+            }
         }
     }
     system("pause");
@@ -321,11 +374,11 @@ void sortDistance(Graph graph)//, int * output, int size)
     for (i = 0; i < graph.cityCount; i++)
         for (j = 0; j < graph.cityCount; j++)
             output[graph.cityCount * i + j] = graph.distance[i][j];
-    int cityStart[] = 
+    // int cityStart[] = 
     //sort
     // qsort(output, size - 1, sizeof(int), cmpfunc);
     quickSort_3way(output, 0, size - 1);
-    for (i = 0; i<size; i++){
+    for (i = 0; i < size; i++){
 		printf("%s - %s: %d (km)\n", graph.cities[i / graph.cityCount], graph.cities[i % graph.cityCount], output[i]);
     }
 }
@@ -336,10 +389,6 @@ int main(){
 	int choiceMenu;
 	int choice;
     Graph g = readGraphFromFile();
-    printf("city 1: %d", getCityID(g, "Brattleboro, VT"));
-    printf("city 2: %d\n", getCityID(g, "Sarasota, FL"));
-    printf("%d", g.distance[37][246]);
-    exit(0);
     // system("pause");
 	while(1){
 		system("cls");
