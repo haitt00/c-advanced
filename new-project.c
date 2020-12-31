@@ -5,9 +5,9 @@
 
 #define CITY_COUNT_INITIAL 312 
 #define CITY_NAME_LENGTH 25
-#define CITY_LIST_FILE "usca312_name_cleaned.txt"
-#define FLIGHT_LIST_FILE "usca312_flight_initial.txt"
-#define DISTANCE_LIST_FILE "usca312_dist.txt"
+#define CITY_LIST_FILE "res/usca312_name_cleaned.txt"
+#define FLIGHT_LIST_FILE "res/usca312_flight_initial.txt"
+#define DISTANCE_LIST_FILE "res/usca312_dist.txt"
 #define CAR_SPEED 1
 #define PLANE_SPEED 100
 #define INVALID_CITY_ID -1
@@ -38,7 +38,7 @@ void printAllFlightFromCity(Graph graph, char * city);
 // khoi:
 int getCityID(Graph graph, char * city);
 char * getCityName(Graph graph, int cityID);
-void sortDistance(Graph Graph, int * output, int size);
+void sortDistance(Graph graph);
 // text input preprocess
 void MAIN_MENU(){
 	printf("\n\tUS & Canada cities flight system\n");
@@ -124,7 +124,7 @@ Graph readGraphFromFile(){
         if(currentChar == '\n'){
             tempString[tempChar] = '\0';
             strcpy(g.cities[cityID], tempString);   
-            printf("%s\n",g.cities[cityID]); // debug purpose
+            // printf("%s\n",g.cities[cityID]); // debug purpose
             tempChar = 0;
             cityID++;
         }else{
@@ -222,24 +222,66 @@ void printShortestRoute(Graph graph, char* source, char* destination){
 }
 void printAllFlight(Graph graph){
     printf("All flights: \n");
-    // for(int i = 0, i < CITY_COUNT_INITIAL)
+    // for(int i = 0, i < CITY_COUNT_INITIAL, i++){
+
+    // }
 }
 void printAllFlightFromCity(Graph graph, char * city){
         printf("All flights from %s:\n", city);
+}
+
+//khoi
+void swap(int* a, int i, int j){
+    int temp = a[i];
+    a[i] = a[j];
+    a[j] = temp;
+}
+
+int cmpfunc(const void* a, const void* b) 
+{
+    return (*(int*)a - *(int*)b);
+}
+
+int getCityID(Graph graph, char* city)
+{
+    for (int i = 0; i < graph.cityCount; i++)
+        if (strcmp(graph.cities[i], city) == 0)
+            return i;
+    return INVALID_CITY_ID;
+}
+char * getCityName(Graph graph, int cityID)
+{
+    for (int i = 0; i < graph.cityCount; i++)
+        if (i == cityID)
+            return graph.cities[i];
+    return INVALID_CITY_NAME;
+}
+void sortDistance(Graph graph) //, int * output, int size)
+{
+    //convert distance to 1D array
+    int size = graph.cityCount * graph.cityCount;
+    int * output = (int*)malloc(sizeof(int) * size);
+    int i, j;
+    for (i = 0; i < graph.cityCount; i++)
+        for (j = 0; j < graph.cityCount; j++)
+            output[graph.cityCount * i + j] = graph.distance[i][j];
+
+    //sort
+    qsort(output, size - 1, sizeof(int), cmpfunc);
 }
 int main(){
 	int choiceMenu;
 	int choice;
     Graph g = readGraphFromFile();
-    system("pause");
+    // system("pause");
 	while(1){
-		// system("cls");
+		system("cls");
 		MAIN_MENU();
 		printf("Enter choice: ");
 		scanf("%d", &choiceMenu);	
 		if(choiceMenu==1){
             while(1){
-                // system("cls");
+                system("cls");
                 MENU_USER();
                 printf("Enter choice: ");
                 scanf("%d", &choice);
@@ -266,7 +308,7 @@ int main(){
 		}
         else if(choiceMenu==2){
             while(1){
-                // system("cls");
+                system("cls");
                 MENU_ADMINISTRATOR();
                 printf("Enter choice: ");
                 scanf("%d", &choice);
