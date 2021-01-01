@@ -3,6 +3,7 @@
 #include <string.h>
 #include <conio.h>
 #include <ctype.h>
+#include <math.h>
 
 #define CITY_COUNT_INITIAL 312 
 #define CITY_NAME_LENGTH 25
@@ -96,20 +97,42 @@ void dropGraph(Graph g){
     free(g.distance);
     free(g.hasflight);
 }
+void trimWhiteSpace(char* input){
+    int i, j;
+    for(i = 0; input[i]==' '||input[i]=='\t';i++);
+    
+    for(j = 0; input[i]; i++){
+        input[j++]=input[i];
+    }
+    input[j] = '\0';
+    for(i=0;input[i]!='\0';i++){
+        if(input[i]!=' ' && input[i]!='\t'){
+            j = i;
+        }
+    }
+    input[j+1] = '\0';
+}
 void toCityName(char* input){
     input = strlwr(input);
-    if(strlen(input) > 0){
-        input[0] = toupper(input[0]);
+    for(int i = 0; i < strlen(input); i++){
+        if(i == 0){
+            input[i] = toupper(input[i]);            
+        }
+        else if(input[i-1] == ' '){
+            input[i] = toupper(input[i]);
+        }
     }
 }
 void getCityNameFromUser(char * prompt1, char* prompt2, char* cityName){
     char stateCode[CITY_NAME_LENGTH];
     printf("%s: ", prompt1);
     scanf(" %[^\n]", cityName);
+    trimWhiteSpace(cityName);
     toCityName(cityName);
     printf("%s: ", prompt2);
-    getch();
+    // getch();
     scanf(" %[^\n]", stateCode);
+    trimWhiteSpace(stateCode);
     strcat(cityName, ", ");
     strcat(cityName, strupr(stateCode));
 }
@@ -220,16 +243,18 @@ Graph readGraphFromFile(){
     // make connection
     for(int source = 0; source < CITY_COUNT_INITIAL; source++)
         for(int dest = 0; dest < CITY_COUNT_INITIAL; dest++){
-                g.connections[source][dest] = g.distance[source][dest] / ((g.hasflight[source][dest]) ? PLANE_SPEED : CAR_SPEED);
+                g.connections[source][dest] = ceil((double)g.distance[source][dest] / ((g.hasflight[source][dest]) ? PLANE_SPEED : CAR_SPEED));
                 // printf("source %d destination %d connection %d\n", source, dest, g.connections[source][dest]); // debug purpose
         }
     return g;
 }
-int dijsktra(int** cost,int source,int target)
+int djisktra(int** cost,int source,int target, int * reversedPath)
 {
+    // printf("debug source: %d\n", source);
+    // printf("debug target: %d\n", target);
+    // printf("debug gostraight: %d\n", cost[source][target]);
     int dist[CITY_COUNT_INITIAL],prev[CITY_COUNT_INITIAL],selected[CITY_COUNT_INITIAL]={0},i,m,min,start,d,j;
-    char path[CITY_COUNT_INITIAL];
-    for(i=1;i< CITY_COUNT_INITIAL;i++)
+    for(i=0;i< CITY_COUNT_INITIAL;i++)
     {
         dist[i] = INFINITE;
         prev[i] = -1;
@@ -241,7 +266,7 @@ int dijsktra(int** cost,int source,int target)
     {
         min = INFINITE;
         m = 0;
-        for(i=1;i< CITY_COUNT_INITIAL;i++)
+        for(i=0;i< CITY_COUNT_INITIAL;i++)
         {
             d = dist[start] +cost[start][i];
             if(d< dist[i]&&selected[i]==0)
@@ -262,19 +287,42 @@ int dijsktra(int** cost,int source,int target)
     j = 0;
     while(start != -1)
     {
-        path[j++] = start+65;
+        // printf("start: %d\n", start); //debug
+        reversedPath[j++] = start;
+        // printf("append: %d\n", reversedPath[j-1]); //debug
         start = prev[start];
     }
-    path[j]='\0';
-    strrev(path);
-    printf("%s", path);
+    reversedPath[j] = -1;
     return dist[target];
 }
 void printShortestRoute(Graph graph, char* source, char* destination){
-    int idSource = getCityID(graph, source);
-    int idDestination = getCityID(graph, destination);
-    int result = dijsktra(graph.connections, idSource, idDestination);
-
+    if(strcmp(source, destination)==0){
+        printf("The source and destination are the same!\n");
+    }
+    else{
+        int idSource = getCityID(graph, source);
+        int idDestination = getCityID(graph, destination);
+        int reversedPath[CITY_COUNT_INITIAL];
+        int result = djisktra(graph.connections, idSource, idDestination, reversedPath);
+        int length = 0;
+        while(reversedPath[length]!=-1){
+            length++;
+        }
+        printf("Shortest route from %s to %s:\n", source, destination);
+        for(int i = length - 1; i >= 0; i--){
+            printf("(%s) ", getCityName(graph, reversedPath[i]));
+            if(i>0){
+                if(graph.hasflight[reversedPath[i]][reversedPath[i-1]]){
+                    printf("<<<-- %d -->>> ", graph.connections[reversedPath[i]][reversedPath[i-1]]);
+                }
+                else{
+                    printf("-- %d -- ", graph.connections[reversedPath[i]][reversedPath[i-1]]);
+                }
+            }
+        }
+        printf("\nTotal time: %d\n", result);
+    }
+    system("pause");
 }
 void printAllFlight(Graph graph){
     printf("All flights (only displayng first 100):\n");
@@ -294,15 +342,10 @@ void printAllFlight(Graph graph){
 void printAllFlightFromCity(Graph graph, char * city){
     printf("All flights from %s: \n", city);
     int cityId = getCityID(graph, city);
-    if(cityId == INVALID_CITY_ID){
-        printf("City not found\n");
-    }
-    else{
-        int count = 1;
-        for(int i = 0; i < CITY_COUNT_INITIAL; i++){
-            if(graph.hasflight[i][cityId]==1){
-                printf("%d. <<<------>>> %s\n", count++, getCityName(graph, i));
-            }
+    int count = 1;
+    for(int i = 0; i < CITY_COUNT_INITIAL; i++){
+        if(graph.hasflight[i][cityId]==1){
+            printf("%d. <<<------>>> %s\n", count++, getCityName(graph, i));
         }
     }
     system("pause");
@@ -407,14 +450,29 @@ int main(){
                 else if(choice==2){
                     char cityName[CITY_NAME_LENGTH];
                     getCityNameFromUser("Enter city name", "Enter state code", cityName);
-                    printf("%s\n", cityName);
-                    printAllFlightFromCity(g, cityName);
+                    if(getCityID(g, cityName)==INVALID_CITY_ID){
+                        printf("City not found!\n");
+                        system("pause");
+                    }
+                    else{
+                        printAllFlightFromCity(g, cityName);
+                    }
                 }
                 else if(choice==3){
                     char sourceCityName[CITY_NAME_LENGTH];
                     char destinationCityName[CITY_NAME_LENGTH];
                     getCityNameFromUser("Enter source city name", "Enter source state code", sourceCityName);
+                    if(getCityID(g, sourceCityName)==INVALID_CITY_ID){
+                        printf("City not found!\n");
+                        system("pause");
+                        continue;
+                    }
                     getCityNameFromUser("Enter destination city name", "Enter destination state code", destinationCityName);
+                    if(getCityID(g, destinationCityName)==INVALID_CITY_ID){
+                        printf("City not found!\n");
+                        system("pause");
+                        continue;
+                    }
                     printShortestRoute(g, sourceCityName, destinationCityName);
                 }
                 else if(choice==4){
@@ -434,7 +492,10 @@ int main(){
                 else if(choice==2){
                     char cityName[CITY_NAME_LENGTH];
                     getCityNameFromUser("Enter city name", "Enter state code", cityName);
-                    printf("%s\n", cityName);
+                    if(getCityID(g, cityName)==INVALID_CITY_ID){
+                        printf("City not found!\n");
+                        system("pause");
+                    }
                     printAllFlightFromCity(g, cityName);
                 }
                 else if(choice==3){
