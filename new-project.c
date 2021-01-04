@@ -9,6 +9,7 @@
 #define CITY_NAME_LENGTH 25
 #define CITY_LIST_FILE "res/usca312_name_cleaned.txt"
 #define FLIGHT_LIST_FILE "res/usca312_flight_initial.txt"
+#define FLIGHT_LIST_FILE_MODI "res/usca312_flight_modified.txt"
 #define DISTANCE_LIST_FILE "res/usca312_dist.txt"
 #define CAR_SPEED 1
 #define PLANE_SPEED 100
@@ -29,8 +30,9 @@ Graph createGraph(int cityCount);
 Graph readGraphFromFile();
 void dropGraph(Graph graph);
 // make change to text file also
-void addFlight(Graph graph, char * source, char * destination);
-void removeFLight(Graph graph, char * source, char * destination);
+void addFlight(Graph g, char * source, char * destination);
+
+void removeFlight(Graph g, char * source, char * destination);
 
 // hai:
 // generate flight file
@@ -56,18 +58,24 @@ void MENU_USER(){
 	printf("---------------------------------\n\n");
 	printf("1. PRINT ALL FLIGHTS\n\n");
 	printf("2. PRINT ALL FLIGHT FROM A CITY\n\n");
-	printf("3. FIND SHORTEST TRAVEL ROUTE BETWEEN TWO CITIES\n\n");
-    printf("4. EXIT\n\n");
+    printf("3. PRINT ALL FLIGHT TO A CITY\n\n");
+    printf("4. PRINT ALL FLIGHT FROM A STATE\n\n");
+    printf("5. PRINT ALL FLIGHT TO A STATE\n\n");
+	printf("6. FIND SHORTEST TRAVEL ROUTE BETWEEN TWO CITIES\n\n");
+    printf("7. EXIT\n\n");
 	printf("---------------------------------\n\n");
 }
 void MENU_ADMINISTRATOR(){
 	printf("\n\tUS & Canada cities flight admin system\n");
 	printf("---------------------------------\n\n");
+    printf("0. PRINT ALL CITIES\n\n");
 	printf("1. PRINT ALL FLIGHTS\n\n");
 	printf("2. PRINT ALL FLIGHTS FROM A CITY\n\n");
-	printf("3. SORT ALL DISTANCES BETWEEN TWO CITIES\n\n");
-	printf("4. MODIFY MAP: ADD/REMOVE FLIGHT\n\n");
-    printf("5. EXIT\n\n");
+    printf("3. PRINT ALL FLIGHT TO A CITY\n\n");
+	printf("4. SORT ALL DISTANCES BETWEEN TWO CITIES\n\n");
+	printf("5. MODIFY MAP: ADD/REMOVE FLIGHT\n\n");
+    printf("6. PRINT ALL CITIES IN A STATE\n\n");
+    printf("7. EXIT\n\n");
 	printf("---------------------------------\n\n");
 }
 Graph createGraph(int cityCount){
@@ -123,15 +131,22 @@ void toCityName(char* input){
         }
     }
 }
+void getStateCodeFromUser(char * stateCode){
+    printf("Enter The State Code: ");
+    scanf(" %s[^\n]", stateCode);
+    trimWhiteSpace(stateCode);
+    for(int i = 0; i < strlen(stateCode); i++)
+            stateCode[i] = toupper(stateCode[i]);            
+}
 void getCityNameFromUser(char * prompt1, char* prompt2, char* cityName){
     char stateCode[CITY_NAME_LENGTH];
     printf("%s: ", prompt1);
-    scanf(" %[^\n]", cityName);
+    scanf(" %s[^\n]", cityName);
     trimWhiteSpace(cityName);
     toCityName(cityName);
     printf("%s: ", prompt2);
     // getch();
-    scanf(" %[^\n]", stateCode);
+    scanf(" %s[^\n]", stateCode);
     trimWhiteSpace(stateCode);
     strcat(cityName, ", ");
     strcat(cityName, strupr(stateCode));
@@ -339,6 +354,15 @@ void printAllFlight(Graph graph){
     }
     system("pause");
 }
+
+void printAllCity(Graph graph){
+    printf("All cities:\n");
+    int count = 1;
+    for(int i = 0; i < CITY_COUNT_INITIAL; i++){
+            printf("%d. %s\n", count++, graph.cities[i]);
+        }
+    system("pause");
+}
 void printAllFlightFromCity(Graph graph, char * city){
     printf("All flights from %s: \n", city);
     int cityId = getCityID(graph, city);
@@ -348,21 +372,26 @@ void printAllFlightFromCity(Graph graph, char * city){
             printf("%d. <<<------>>> %s\n", count++, getCityName(graph, i));
         }
     }
+    if(count == 1)
+        printf("There is none\n");
+    system("pause");
+}
+
+void printAllFlightToCity(Graph graph, char * city){
+    printf("All flights to %s: \n", city);
+    int cityId = getCityID(graph, city);
+    int count = 1;
+    for(int i = 0; i < CITY_COUNT_INITIAL; i++){
+        if(graph.hasflight[cityId][i]==1){
+            printf("%d. <<<------>>> %s\n", count++, getCityName(graph, i));
+        }
+    }
+    if(count == 1)
+        printf("There is none\n");
     system("pause");
 }
 
 //khoi
-void swap(int* a, int i, int j){
-    int temp = a[i];
-    a[i] = a[j];
-    a[j] = temp;
-}
-
-int cmpfunc(const void* a, const void* b) 
-{
-    return (*(int*)a - *(int*)b);
-}
-
 int getCityID(Graph graph, char* city)
 {
     for (int i = 0; i < graph.cityCount; i++)
@@ -377,7 +406,21 @@ char * getCityName(Graph graph, int cityID)
             return graph.cities[i];
     return INVALID_CITY_NAME;
 }
-void quickSort_3way(int a[], int l, int r)
+void swap(int* a, int * order, int i, int j){
+    int temp = a[i];
+    a[i] = a[j];
+    a[j] = temp;
+    int orderi = order[i];
+    int orderj = order[j];
+    order[i] = orderj;
+    order[j] = orderi;
+}
+
+int cmpfunc(const void* a, const void* b) 
+{
+    return (*(int*)a - *(int*)b);
+}
+void quickSort_3way(int a[], int order[], int l, int r)
 {
 	if (r <= l)
 		return;
@@ -392,43 +435,160 @@ void quickSort_3way(int a[], int l, int r)
 				break;
 		if (i >= j)
 			break;
-		swap(a, i, j);
+		swap(a, order, i, j);
 		if (a[i] == a[r])
-			swap(a, ++p, i);
+			swap(a, order, ++p, i);
 		if (a[j] == a[r])
-			swap(a, --q, j);
+			swap(a, order, --q, j);
 	}
-	swap(a, i, r);
+	swap(a, order, i, r);
 	j = i - 1;
 	i = i + 1;
 	for (k = l; k <= p; k++)
-		swap(a, k, j--);
+		swap(a, order, k, j--);
 	for (k = r - 1; k >= q; k--)
-		swap(a, k, i++);
-	quickSort_3way(a, l, j);
-	quickSort_3way(a, i, r);
+		swap(a, order, k, i++);
+	quickSort_3way(a, order, l, j);
+	quickSort_3way(a, order, i, r);
 }
 void sortDistance(Graph graph)//, int * output, int size)
 {
     //convert distance to 1D array
     int size = graph.cityCount * graph.cityCount;
     int * output = (int*)malloc(sizeof(int) * size);
+    //save the initial order in a new array
+    int * order = (int*)malloc(sizeof(int) * size);
     int i, j;
     for (i = 0; i < graph.cityCount; i++)
-        for (j = 0; j < graph.cityCount; j++)
+        for (j = 0; j < graph.cityCount; j++){
             output[graph.cityCount * i + j] = graph.distance[i][j];
+            order[graph.cityCount * i + j] = graph.cityCount * i + j;
+        }
     // int cityStart[] = 
     //sort
     // qsort(output, size - 1, sizeof(int), cmpfunc);
-    quickSort_3way(output, 0, size - 1);
-    for (i = 0; i < size; i++){
-		printf("%s - %s: %d (km)\n", graph.cities[i / graph.cityCount], graph.cities[i % graph.cityCount], output[i]);
+    quickSort_3way(output, order, 0, size - 1);
+    for (i = 0; i < 1000; i++){
+        //printf("%d\n", order[i]);
+		printf("%s - %s: %d (km)\n", graph.cities[order[i] / graph.cityCount], graph.cities[order[i] % graph.cityCount], output[i]);
+    }
+    system("pause");
+}
+
+void removeFlight(Graph g, char * source, char * destination){
+    int sourceID = getCityID(g, source); 
+    int destID = getCityID(g, destination);
+    if( g.hasflight[sourceID][destID] == 0 ){
+        printf("Flight does not exist!\n");
+        return;
+    } 
+    g.hasflight[sourceID][destID] = 0;
+    g.hasflight[destID][sourceID] = 0;
+    FILE * f = fopen(FLIGHT_LIST_FILE_MODI, "w");
+    for(int i = 0; i < g.cityCount; i ++){
+        for(int j = 0; j < g.cityCount; j++){
+            fprintf(f, "%d ", g.hasflight[i][j]);
+        }
+        fprintf(f, "\n");
+    }
+    fclose(f);
+    printf("Remove flight succesfully!\n");
+}
+
+
+void addFlight(Graph g, char * source, char * destination){
+    int sourceID = getCityID(g, source); 
+    int destID = getCityID(g, destination);
+    if( g.hasflight[sourceID][destID] == 1 ){
+        printf("Flight's already existed!\n");
+        return;
+    } 
+    g.hasflight[sourceID][destID] = 1;
+    g.hasflight[destID][sourceID] = 1;
+    FILE * f = fopen(FLIGHT_LIST_FILE_MODI, "w");
+    for(int i = 0; i < g.cityCount; i ++){
+        for(int j = 0; j < g.cityCount; j++){
+            fprintf(f, "%d ", g.hasflight[i][j]);
+        }
+        fprintf(f, "\n");
+    }
+    fclose(f);
+    printf("Add flight succesfully!\n");
+}
+
+// all city in a state
+// all flight from a state
+// all flight to a state
+
+int getCityList(Graph graph, char* stateCode, int * list){
+    int res = 0;
+    for (int i = 0; i < graph.cityCount; i++){
+        if(strstr(graph.cities[i], stateCode) != NULL) {
+            list[res++] = i;
+        }
+    }
+    return res;
+}
+
+void printAllCityInState(Graph g, char * stateCode){
+    int *cityList = (int*)malloc(sizeof(int)*g.cityCount);
+    int size = getCityList(g, stateCode, cityList);
+    if(size == 0)
+        printf("Invalid State Code\n");
+    else{
+        printf("List of city in state with code %s\n", stateCode);
+        int count = 1;
+        for(int i = 0; i < size; i++){
+            printf("%d. <<<------>>> %s\n", count++, getCityName(g, cityList[i]));
+        }
+    }
+}
+ 
+void printAllFlightFromState(Graph g, char * stateCode){
+    int *cityList = (int*)malloc(sizeof(int)*g.cityCount);
+    int size = getCityList(g, stateCode, cityList);
+    if(size == 0)
+        printf("Invalid State Code\n");
+    else{
+        printf("List of flight from state with code %s\n", stateCode);
+        int count = 1;
+        for(int i = 0; i < size; i++){
+        for(int j = 0; j < cityList[i]; j++){
+            if(g.hasflight[cityList[i]][j]==1){
+            printf("%d. %s <<<------>>> %s\n", count++, getCityName(g, cityList[i]), getCityName(g, j));
+            }
+        }
+       
+        }
+         if (count == 1){
+            printf("There is none\n");
+        }
+    }
+}
+
+void printAllFlightToState(Graph g, char * stateCode){
+    int *cityList = (int*)malloc(sizeof(int)*g.cityCount);
+    int size = getCityList(g, stateCode, cityList);
+    if(size == 0)
+        printf("Invalid State Code\n");
+    else{
+        printf("List of flight to state with code %s\n", stateCode);
+        int count = 1;
+        for(int i = 0; i < size; i++){
+            for(int j = 0; j < cityList[i]; j++){
+                if(g.hasflight[j][cityList[i]]==1){
+                printf("%d. %s <<<------>>> %s\n", count++, getCityName(g, j), getCityName(g, cityList[i]));
+                }
+            }
+        }
+        if (count == 1){
+            printf("There is none\n");
+        }
     }
 }
 
 
 int main(){
-
 	int choiceMenu;
 	int choice;
     Graph g = readGraphFromFile();
@@ -457,8 +617,30 @@ int main(){
                     else{
                         printAllFlightFromCity(g, cityName);
                     }
+                }else if(choice==3){
+                    char cityName[CITY_NAME_LENGTH];
+                    getCityNameFromUser("Enter city name", "Enter state code", cityName);
+                    if(getCityID(g, cityName)==INVALID_CITY_ID){
+                        printf("City not found!\n");
+                        system("pause");
+                    }
+                    else{
+                        printAllFlightToCity(g, cityName);
+                    }
+                }else if(choice==4){
+                    // print all flight from a state
+                    char stateCode[CITY_NAME_LENGTH];
+                    getStateCodeFromUser(stateCode);
+                    printAllFlightFromState(g, stateCode);
+                    system("pause");
+                }else if(choice==5){
+                    // print all flight to a state
+                    char stateCode[CITY_NAME_LENGTH];
+                    getStateCodeFromUser(stateCode);
+                    printAllFlightToState(g, stateCode);
+                    system("pause");
                 }
-                else if(choice==3){
+                else if(choice==6){
                     char sourceCityName[CITY_NAME_LENGTH];
                     char destinationCityName[CITY_NAME_LENGTH];
                     getCityNameFromUser("Enter source city name", "Enter source state code", sourceCityName);
@@ -475,7 +657,7 @@ int main(){
                     }
                     printShortestRoute(g, sourceCityName, destinationCityName);
                 }
-                else if(choice==4){
+                else if(choice==7){
                     break;
                 }
             }	
@@ -486,7 +668,10 @@ int main(){
                 MENU_ADMINISTRATOR();
                 printf("Enter choice: ");
                 scanf("%d", &choice);
-                if(choice==1){
+                if(choice==0){
+                    printAllCity(g);
+                }
+                else if(choice==1){
                     printAllFlight(g);
                 }
                 else if(choice==2){
@@ -497,14 +682,76 @@ int main(){
                         system("pause");
                     }
                     printAllFlightFromCity(g, cityName);
-                }
-                else if(choice==3){
-                    sortDistance(g);
+                }else if(choice==3){
+                    char cityName[CITY_NAME_LENGTH];
+                    getCityNameFromUser("Enter city name", "Enter state code", cityName);
+                    if(getCityID(g, cityName)==INVALID_CITY_ID){
+                        printf("City not found!\n");
+                        system("pause");
+                    }
+                    printAllFlightToCity(g, cityName);
                 }
                 else if(choice==4){
-                    //linh
+                    sortDistance(g);
                 }
                 else if(choice==5){
+                    while(1){
+                    system("cls");
+                    printf("---------------------------------\n\n");
+                    printf("1. ADD FLIGHT TO DATABASE\n\n");
+                    printf("2. REMOVE FLIGHT FROM DATABASE\n\n");
+                    printf("3. EXIT\n\n");
+                    printf("---------------------------------\n\n");
+                    int modiChoice;
+                    printf("Enter choice: ");
+		            scanf("%d", &modiChoice);	
+                    if(modiChoice == 1){
+                        char sourceCityName[CITY_NAME_LENGTH];
+                        char destinationCityName[CITY_NAME_LENGTH];
+                        getCityNameFromUser("Enter source city name", "Enter source state code", sourceCityName);
+                        if(getCityID(g, sourceCityName)==INVALID_CITY_ID){
+                            printf("City not found!\n");
+                            system("pause");
+                            continue;
+                        }
+                        getCityNameFromUser("Enter destination city name", "Enter destination state code", destinationCityName);
+                        if(getCityID(g, destinationCityName)==INVALID_CITY_ID){
+                            printf("City not found!\n");
+                            system("pause");
+                            continue;
+                        }
+                        addFlight(g, sourceCityName, destinationCityName);
+                        system("pause");
+                    }else if(modiChoice == 2){
+                        char sourceCityName[CITY_NAME_LENGTH];
+                        char destinationCityName[CITY_NAME_LENGTH];
+                        getCityNameFromUser("Enter source city name", "Enter source state code", sourceCityName);
+                        if(getCityID(g, sourceCityName)==INVALID_CITY_ID){
+                            printf("City not found!\n");
+                            system("pause");
+                            continue;
+                        }
+                        getCityNameFromUser("Enter destination city name", "Enter destination state code", destinationCityName);
+                        if(getCityID(g, destinationCityName)==INVALID_CITY_ID){
+                            printf("City not found!\n");
+                            system("pause");
+                            continue;
+                        }
+                        removeFlight(g, sourceCityName, destinationCityName);
+                        system("pause");
+                    }else if(modiChoice == 3){
+                        break;
+                    }
+                    }
+                }
+                else if(choice==6){
+                    // print all cities in a state
+                    char stateCode[CITY_NAME_LENGTH];
+                    getStateCodeFromUser(stateCode);
+                    printAllCityInState(g, stateCode);
+                    system("pause");
+                }
+                else if(choice==7){
                     break;
                 }
             }
@@ -522,10 +769,4 @@ int main(){
 	// printf("%s\n", g.cities[0]);
 
 }
-
-
-
-
-
-
 
