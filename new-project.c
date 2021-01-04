@@ -468,7 +468,7 @@ void sortDistance(Graph graph)//, int * output, int size)
     //sort
     // qsort(output, size - 1, sizeof(int), cmpfunc);
     quickSort_3way(output, order, 0, size - 1);
-    for (i = 0; i < 1000; i++){
+    for (i = 0; i < size; i++){
         //printf("%d\n", order[i]);
 		printf("%s - %s: %d (km)\n", graph.cities[order[i] / graph.cityCount], graph.cities[order[i] % graph.cityCount], output[i]);
     }
@@ -539,7 +539,7 @@ void printAllCityInState(Graph g, char * stateCode){
         printf("List of city in state with code %s\n", stateCode);
         int count = 1;
         for(int i = 0; i < size; i++){
-            printf("%d. <<<------>>> %s\n", count++, getCityName(g, cityList[i]));
+            printf("%d. %s\n", count++, getCityName(g, cityList[i]));
         }
     }
 }
